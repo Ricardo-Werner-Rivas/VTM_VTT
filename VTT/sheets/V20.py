@@ -7,6 +7,7 @@ atributos = {
     "Mentales": {"Percepción": 1, "Inteligencia": 1, "Astucia": 1}
 }
 prioridades_attr = {"Físicos": None, "Sociales": None, "Mentales": None}
+selects_prioridad = {}
 
 habilidades = {
     "Talentos": ["Alerta", "Atletismo", "Callejeo", "Consciencia", "Empatía", "Expresión", "Intimidación", "Liderazgo", "Pelea", "Subterfugio"],
@@ -16,61 +17,67 @@ habilidades = {
 
 lore_clanes = {
     "Assamita": "Los Asesinos y jueces de la Estirpe, originarios de Oriente Medio. Operan de forma independiente y son temidos por su maestría en el asesinato y su sed de sangre vampírica.\n\n• Disciplinas: Celeridad, Extinción, Ofuscación.\n• Debilidad: Adicción a la sangre vampírica (Vitae). Si prueban la sangre de otro vampiro, corren el riesgo de volverse adictos a ella.",
-    
     "Brujah": "Los Brujah son rebeldes, apasionados y violentos. Antaño fueron reyes filósofos en Cartago, pero hoy son conocidos por su furia y su lucha contra el orden establecido.\n\n• Disciplinas: Celeridad, Potencia, Presencia.\n• Debilidad: Su sangre hierve fácilmente; la dificultad de las tiradas para resistir el frenesí aumenta en 2.",
-    
     "Gangrel": "Solitarios y nómadas, son los vampiros más cercanos a su Bestia interior y a la naturaleza. A menudo prefieren la compañía de los animales a la de otros vampiros.\n\n• Disciplinas: Animalismo, Fortaleza, Protean.\n• Debilidad: Cada vez que entran en frenesí, adquieren un rasgo animal temporal o permanente.",
-    
     "Giovanni": "Un clan hermético compuesto por una única familia mortal de nigromantes venecianos. Están obsesionados con la riqueza, el poder y el control de las almas de los muertos.\n\n• Disciplinas: Dominación, Nigromancia, Potencia.\n• Debilidad: Su Mordisco es insoportablemente doloroso en lugar de placentero. Infligen daño extra al alimentarse.",
-    
     "Lasombra": "Líderes natos, despiadados y aristocráticos. Creen en el darwinismo social y en gobernar desde las sombras, siendo el principal clan dirigente de la secta del Sabbat.\n\n• Disciplinas: Dominación, Obtenebración, Potencia.\n• Debilidad: No tienen reflejo. No aparecen en espejos, cámaras de seguridad ni superficies reflectantes.",
-    
     "Malkavian": "Todos los miembros de este clan están irremediablemente locos, pero su locura a menudo les otorga una visión profética y una sabiduría incomprensible para el resto de la Estirpe.\n\n• Disciplinas: Auspex, Dementación, Ofuscación.\n• Debilidad: Comienzan con un trastorno mental permanente que no puede ser curado con Fuerza de Voluntad.",
-    
     "Nosferatu": "Sufren la Maldición de Caín en su propia carne. El Abrazo los deforma monstruosamente. Aislados en las alcantarillas, son los grandes espías y traficantes de secretos.\n\n• Disciplinas: Animalismo, Ofuscación, Potencia.\n• Debilidad: Apariencia cero. Jamás pueden aumentar este atributo debido a su deformidad física.",
-    
     "Ravnos": "Nómadas, embaucadores y maestros de las ilusiones. A menudo son marginados y vistos con desconfianza debido a su reputación de estafadores y vividores.\n\n• Disciplinas: Animalismo, Fortaleza, Quimerismo.\n• Debilidad: Tienen un vicio o crimen específico (como robar, mentir o apostar) del que les cuesta mucho resistirse.",
-    
     "Seguidores de Set": "Adoradores de un antiguo dios-serpiente. Son maestros de la corrupción, los secretos ocultos y los vicios, buscando siempre seducir a otros hacia la oscuridad.\n\n• Disciplinas: Ofuscación, Presencia, Serpentis.\n• Debilidad: Extremadamente sensibles a la luz. Reciben daño agravado adicional de la luz solar y sufren bajo focos intensos.",
-    
-    "Toreador": "Artistas, seductores y hedonistas. Se obsesionan con la belleza y la cultura humana, siendo el clan más integrado en la alta sociedad mortal.\n\n• Disciplinas: Auspex, Celeridad, Presencia.\n• Debilidad: Pueden quedar extasiados al contemplar algo verdaderamente hermoso (una obra de arte, una persona, un amanecer), perdiendo la noción del entorno.",
-    
+    "Toreador": "Artistas, seductores y hedonistas. Se obsesionan con la belleza y la cultura humana, siendo el clan más integrado en la alta sociedad mortal.\n\n• Disciplinas: Auspex, Celeridad, Presencia.\n• Debilidad: Pueden quedar extasiados al contemplar algo verdaderamente hermoso, perdiendo la noción del entorno.",
     "Tremere": "Un clan de hechiceros de la sangre y antiguos magos que robaron la inmortalidad. Son estrictos, organizados y sumamente desconfiados con los demás clanes.\n\n• Disciplinas: Auspex, Dominación, Taumaturgia.\n• Debilidad: Su sangre está muy controlada. Todos los neófitos dan un paso hacia el Vínculo de Sangre con el consejo gobernante de los Siete al ser Abrazados.",
-    
-    "Tzimisce": "Eruditos inhumanos, monstruosos y maestros de la carne. Consideran que han superado los límites humanos y moldean los cuerpos de sus víctimas (y los suyos propios) a su antojo.\n\n• Disciplinas: Animalismo, Auspex, Vicisitud.\n• Debilidad: Apego a su tierra. Deben descansar rodeados de al menos dos puñados de tierra de un lugar importante para ellos (normalmente donde nacieron o fueron Abrazados).",
-    
-    "Ventrue": "Los Ventrue son la realeza de los Condenados. Dirigen la Camarilla y valoran el linaje, el éxito corporativo y la influencia en la sociedad mortal por encima de todo.\n\n• Disciplinas: Dominación, Fortaleza, Presencia.\n• Debilidad: Gusto refinado y exclusivo. Solo pueden beber sangre de un tipo específico de mortal (ej. mujeres jóvenes, sacerdotes, policías)."
+    "Tzimisce": "Eruditos inhumanos, monstruosos y maestros de la carne. Consideran que han superado los límites humanos y moldean los cuerpos de sus víctimas a su antojo.\n\n• Disciplinas: Animalismo, Auspex, Vicisitud.\n• Debilidad: Apego a su tierra. Deben descansar rodeados de al menos dos puñados de tierra de un lugar importante para ellos.",
+    "Ventrue": "Los Ventrue son la realeza de los Condenados. Dirigen la Camarilla y valoran el linaje, el éxito corporativo y la influencia en la sociedad mortal por encima de todo.\n\n• Disciplinas: Dominación, Fortaleza, Presencia.\n• Debilidad: Gusto refinado y exclusivo. Solo pueden beber sangre de un tipo específico de mortal."
 }
 
 lore_conceptos = {
-    "Naturaleza": "La Naturaleza es el verdadero 'yo' de tu personaje, su personalidad más profunda y auténtica. En términos de juego, recuperas puntos de Fuerza de Voluntad cuando actúas de acuerdo a tu Naturaleza.\n\nEjemplos: Arquitecto, Autócrata, Bribón, Director, Mártir, Monstruo, Sobreviviente.",
-    
+    "Naturaleza": "La Naturaleza es el verdadero 'yo' de tu personaje, su personalidad más profunda y auténtica. En términos de juego, recuperas puntos de Fuerza de Voluntad cuando actúas de acuerdo a tu Naturaleza.",
     "Conducta": "La Conducta es la máscara o fachada que tu vampiro presenta al mundo. Es cómo te perciben los demás. En la traicionera sociedad de la Estirpe, mostrar tu verdadera Naturaleza es peligroso, por lo que la Conducta suele ser diferente.",
-    
-    "Concepto": "El Concepto es un resumen de quién era tu personaje antes del Abrazo (su vida mortal). Es el ancla de su Humanidad.\n\nEjemplos: 'Policía corrupto', 'Estudiante endeudado', 'Artista torturado', 'Heredero arruinado'.",
-    
-    "Generación": "La Generación indica a qué distancia está tu vampiro de Caín, el Primero. Los jugadores suelen empezar en la 13ª Generación. Cuanto más baja es (ej: 10ª u 8ª), más poderosa es tu sangre, pero para ello debes comprar el Trasfondo 'Generación'.",
-    
-    "Sire": "El Sire es el vampiro que te dio el Abrazo y te convirtió. En la Camarilla, tu Sire es tu maestro y responsable legal de tus acciones hasta que te presenta formalmente al Príncipe de la ciudad."
+    "Generación": "La Generación indica a qué distancia está tu vampiro de Caín, el Primero. Los jugadores suelen empezar en la 13ª Generación. Cuanto más baja es, más poderosa es tu sangre, pero para ello debes comprar el Trasfondo 'Generación'."
 }
 
 lore_opciones_concepto = {
-    # Arquetipos (Sirven para Naturaleza y Conducta)
-    "Arquitecto": "Tu sentido de la vida es construir un legado. Recuperas 1 punto de Fuerza de Voluntad cuando estableces algo de importancia o valor duradero.",
-    "Autócrata": "Necesitas tener el control absoluto de la situación. Recuperas 1 punto de Fuerza de Voluntad cuando consigues el control sobre un grupo o una crisis.",
-    "Bribón": "Solo te importas tú mismo. Recuperas 1 punto de Fuerza de Voluntad cuando tu actitud egoísta te salva de perder algo o te proporciona una ventaja.",
-    "Director": "Odias el caos y amas el orden. Recuperas 1 punto de Fuerza de Voluntad cuando logras liderar a un grupo y completar una tarea difícil.",
-    "Mártir": "Sufres por los demás. Recuperas 1 punto de Fuerza de Voluntad cuando te sacrificas de forma genuina por otro o por un ideal de forma perjudicial para ti.",
-    "Monstruo": "Has abrazado la Bestia interior. Recuperas 1 punto de Fuerza de Voluntad cuando realizas un acto verdaderamente atroz sin mostrar remordimientos.",
-    "Sobreviviente": "Nada puede acabar contigo. Recuperas 1 punto de Fuerza de Voluntad cuando sobrevives a una situación que amenazaba tu existencia mediante tu astucia o resistencia.",
-    
     # Generaciones
     "13ª Generación": "La generación más común para neonatos. \n• Capacidad de Sangre: 10\n• Puntos por turno: 1\n• Coste: 0 puntos de Trasfondo.",
     "12ª Generación": "Tu sangre es un poco más fuerte. \n• Capacidad de Sangre: 11\n• Puntos por turno: 1\n• Coste: 1 punto de Trasfondo (Generación).",
     "11ª Generación": "Un paso más cerca de Caín. \n• Capacidad de Sangre: 12\n• Puntos por turno: 1\n• Coste: 2 puntos de Trasfondo (Generación).",
     "10ª Generación": "Tu sangre empieza a ser respetable. \n• Capacidad de Sangre: 13\n• Puntos por turno: 1\n• Coste: 3 puntos de Trasfondo (Generación).",
     "9ª Generación": "Sangre poderosa. \n• Capacidad de Sangre: 14\n• Puntos por turno: 2\n• Coste: 4 puntos de Trasfondo (Generación).",
-    "8ª Generación": "El límite para un personaje inicial. Eres notablemente poderoso. \n• Capacidad de Sangre: 15\n• Puntos por turno: 3\n• Coste: 5 puntos de Trasfondo (Generación)."
+    "8ª Generación": "El límite para un personaje inicial. Eres notablemente poderoso. \n• Capacidad de Sangre: 15\n• Puntos por turno: 3\n• Coste: 5 puntos de Trasfondo (Generación).",
+
+    # Arquetipos de Personalidad
+    "Ansioso": "Vives para el riesgo y la adrenalina. Recuperas 1 punto de Fuerza de Voluntad cuando realizas una tarea peligrosa y sobrevives sin rasguños.",
+    "Arquitecto": "Tu sentido de la vida es construir un legado. Recuperas 1 punto de Fuerza de Voluntad cuando estableces algo de importancia o valor duradero.",
+    "Autócrata": "Necesitas tener el control absoluto de la situación. Recuperas 1 punto de Fuerza de Voluntad cuando consigues el control sobre un grupo o una crisis.",
+    "Bizarro": "Estás orgulloso de ser un marginado o diferente. Recuperas 1 punto de Fuerza de Voluntad cuando ignoras las normas sociales impunemente.",
+    "Bribón": "Solo te importas tú mismo. Recuperas 1 punto de Fuerza de Voluntad cuando tu actitud egoísta te salva de perder algo o te proporciona una ventaja.",
+    "Bufón": "Eres el eterno bromista, incluso en el peligro. Recuperas 1 punto de Fuerza de Voluntad cuando logras levantar el ánimo de los demás o escapas usando el humor.",
+    "Capitalista": "Todo tiene un precio. Recuperas 1 punto de Fuerza de Voluntad cuando realizas un negocio o intercambio altamente beneficioso para ti.",
+    "Celebrante": "Encuentras tu alegría en una causa o pasión. Recuperas 1 punto de Fuerza de Voluntad cuando persigues tu causa o disfrutas abiertamente de lo que amas.",
+    "Competidor": "Vives para ganar. Recuperas 1 punto de Fuerza de Voluntad cuando ganas una competición o superas a un rival en algo importante.",
+    "Conformista": "Prefieres seguir antes que liderar. Recuperas 1 punto de Fuerza de Voluntad cuando el grupo o tu líder logra un objetivo gracias a tu apoyo.",
+    "Creador": "Sientes la necesidad de dar forma a lo nuevo. Recuperas 1 punto de Fuerza de Voluntad cuando creas un objeto o concepto de verdadero valor.",
+    "Cuidador": "Sientes la necesidad de proteger a los demás. Recuperas 1 punto de Fuerza de Voluntad cuando proteges o sanas a alguien que lo necesita.",
+    "Defensor": "Eres el escudo de algo mayor. Recuperas 1 punto de Fuerza de Voluntad cuando tu defensa de una persona, grupo o ideal tiene éxito bajo presión.",
+    "Director": "Odias el caos y amas el orden. Recuperas 1 punto de Fuerza de Voluntad cuando logras liderar a un grupo y completar una tarea difícil.",
+    "Enigma": "Tus motivos son un misterio. Recuperas 1 punto de Fuerza de Voluntad cuando tus acciones dejan perplejo a alguien o deduces algo oculto.",
+    "Fanático": "Consumes tu existencia por una causa suprema. Recuperas 1 punto de Fuerza de Voluntad cuando logras avanzar significativamente en tu causa.",
+    "Galán": "Eres deslumbrante y amas ser el centro de atención. Recuperas 1 punto de Fuerza de Voluntad cuando logras impresionar enormemente a otra persona.",
+    "Gurú": "Tu sabiduría es tu guía. Recuperas 1 punto de Fuerza de Voluntad cuando alguien busca tu consejo espiritual o filosófico y este le resulta útil.",
+    "Juez": "Buscas la verdad y el equilibrio. Recuperas 1 punto de Fuerza de Voluntad cuando resuelves una disputa de forma justa o separas la verdad de la mentira.",
+    "Mártir": "Sufres por los demás. Recuperas 1 punto de Fuerza de Voluntad cuando te sacrificas de forma genuina por otro o por un ideal.",
+    "Monstruo": "Has abrazado la Bestia interior. Recuperas 1 punto de Fuerza de Voluntad cuando realizas un acto verdaderamente atroz sin mostrar remordimientos.",
+    "Niño": "Aún buscas la protección que perdiste. Recuperas 1 punto de Fuerza de Voluntad cuando alguien te consuela, ayuda o asume tus responsabilidades.",
+    "Pedagogo": "Vives para enseñar. Recuperas 1 punto de Fuerza de Voluntad cuando alguien aprende algo importante y saca provecho de tus enseñanzas.",
+    "Penitente": "Sientes que no mereces el perdón. Recuperas 1 punto de Fuerza de Voluntad cuando tu sufrimiento sirve para expiar una de tus malas acciones.",
+    "Perfeccionista": "Solo toleras lo impecable. Recuperas 1 punto de Fuerza de Voluntad cuando logras hacer algo a la perfección, sin un solo error.",
+    "Rebelde": "La autoridad está para desafiarla. Recuperas 1 punto de Fuerza de Voluntad cuando tus acciones de rebeldía contra el sistema tienen éxito.",
+    "Sádico": "Vives para causar dolor. Recuperas 1 punto de Fuerza de Voluntad cuando infliges sufrimiento físico o emocional a alguien sin sufrir repercusiones.",
+    "Solitario": "No necesitas a nadie. Recuperas 1 punto de Fuerza de Voluntad cuando logras un objetivo importante por tus propios medios, sin depender de otros.",
+    "Sobreviviente": "Nada puede acabar contigo. Recuperas 1 punto de Fuerza de Voluntad cuando sobrevives a una amenaza extrema mediante tu astucia o resistencia.",
+    "Tradicionalista": "El pasado contiene las respuestas. Recuperas 1 punto de Fuerza de Voluntad cuando los métodos probados y antiguos demuestran ser los mejores.",
+    "Visionario": "Ves más allá del presente. Recuperas 1 punto de Fuerza de Voluntad cuando das un paso importante hacia tu visión de futuro o convences a otros de ella."
 }
 
 # --- FUNCIONES LÓGICAS ---
@@ -78,69 +85,89 @@ def actualizar_guia_clan(evento):
     clan = evento.value
     info = lore_clanes.get(clan, "Información de este clan no disponible aún.")
     texto_guia.set_text(f"CLAN {clan.upper()}\n\n{info}")
-    
+
 def actualizar_guia_desplegable(evento, categoria):
     seleccion = evento.value
-    
-    # 1. Buscamos qué significa la categoría en general (ej: qué es la Naturaleza)
     info_general = lore_conceptos.get(categoria, "")
-    
-    # 2. Buscamos qué hace la opción elegida (ej: el arquetipo Arquitecto)
     info_especifica = lore_opciones_concepto.get(seleccion, "Información no disponible.")
-    
-    # 3. Construimos el texto combinando ambas con una separación clara
     texto_combinado = f"{categoria.upper()}\n\n{info_general}\n\n{'='*30}\n\n{seleccion.upper()}\n\n{info_especifica}"
-    
-    # 4. Actualizamos el panel lateral
     texto_guia.set_text(texto_combinado)
-    
-def actualizar_guia_concepto(campo):
-    info = lore_conceptos.get(campo, "")
-    if info:
-        texto_guia.set_text(f"{campo.upper()}\n\n{info}")
 
-def modificar_atributos(categoria, atributo, delta, label_puntos):
-    prio = prioridades_attr[categoria]
-    if not prio:
-        ui.notify(f"Selecciona primero una prioridad para la categoría {categoria}.", type='warning')
+def actualizar_opciones_prioridad():
+    opciones_base = ['Primario (7 pts)', 'Secundario (5 pts)', 'Terciario (3 pts)']
+    
+    # Extraemos el texto de las que ya están seleccionadas
+    seleccionadas = [val['value'] for val in prioridades_attr.values() if val is not None]
+    
+    for cat, select in selects_prioridad.items():
+        valor_actual_texto = prioridades_attr[cat]['value'] if prioridades_attr[cat] else None
+        
+        nuevas_opciones = []
+        for op in opciones_base:
+            esta_deshabilitada = (op in seleccionadas) and (valor_actual_texto != op)
+            nuevas_opciones.append({'label': op, 'value': op, 'disable': esta_deshabilitada})
+        
+        select.options = nuevas_opciones
+        
+        # Reconectamos el valor actual con el nuevo diccionario para la interfaz
+        if prioridades_attr[cat]:
+            for opt in nuevas_opciones:
+                if opt['value'] == prioridades_attr[cat]['value']:
+                    select.value = opt
+        
+        select.update()
+
+def cambiar_prioridad(evento, categoria):
+    if not evento.value: return
+    prioridades_attr[categoria] = evento.value
+    actualizar_opciones_prioridad()
+
+def intentar_cambiar_puntos(categoria, atributo, nuevo_valor, container):
+    prio_dict = prioridades_attr[categoria]
+    if not prio_dict:
+        ui.notify(f"Selecciona primero una prioridad para los atributos {categoria}.", type='warning')
         return
 
-    # Extraer el máximo de puntos de la selección (7, 5 o 3)
-    max_pts = 7 if "7" in prio else (5 if "5" in prio else 3)
+    # Extraemos el texto del diccionario para saber si son 7, 5 o 3
+    prio_texto = prio_dict['value']
+    max_pts = 7 if "7" in prio_texto else (5 if "5" in prio_texto else 3)
     
-    # Calcular gastados restando 1 (el punto base gratuito)
-    gastados = sum(atributos[categoria][a] - 1 for a in atributos[categoria])
-    valor_actual = atributos[categoria][atributo]
-    nuevo_valor = valor_actual + delta
-
-    # Validaciones matemáticas
-    if delta > 0: # Sumar
-        if gastados >= max_pts:
-            ui.notify(f"Límite de {max_pts} puntos alcanzado en {categoria}.", type='info')
+    old_value = atributos[categoria][atributo]
+    delta = nuevo_valor - old_value
+    
+    if delta == 0: return
+        
+    if delta > 0:
+        gastados = sum(atributos[categoria][a] - 1 for a in atributos[categoria])
+        if gastados + delta > max_pts:
+            ui.notify(f"Límite de {max_pts} alcanzado en {categoria}.", type='info')
             return
-        if nuevo_valor > 5:
-            return
-    elif delta < 0: # Restar
+    elif delta < 0:
         if nuevo_valor < 1:
-            return
+            nuevo_valor = 1
 
-    # Aplicar cambios al estado y a la interfaz
     atributos[categoria][atributo] = nuevo_valor
-    label_puntos.set_text("●" * nuevo_valor + "○" * (5 - nuevo_valor))
+    renderizar_puntos(container, categoria, atributo)
 
+def renderizar_puntos(container, categoria, atributo):
+    container.clear()
+    valor = atributos[categoria][atributo]
+    
+    with container:
+        for i in range(1, 6):
+            dot_text = "●" if i <= valor else "○"
+            ui.label(dot_text).classes(
+                'text-red-700 text-2xl font-mono cursor-pointer mx-[1px] select-none hover:text-red-400 transition-colors'
+            ).on('click', lambda e, cat=categoria, attr=atributo, nv=i, cont=container: intentar_cambiar_puntos(cat, attr, nv, cont))
 
 # --- ESTILOS GRÁFICOS Y AMBIENTACIÓN ---
-
-# 1. Forzar el Modo Oscuro nativo
 ui.dark_mode().enable()
 
-# 2. Inyectar CSS personalizado para fuentes góticas y texturas
 ui.add_head_html('''
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=EB+Garamond:wght@400;700&display=swap');
         
         body {
-            /* Fondo oscuro profundo con un ligero degradado radial */
             background-color: #0a0a0a;
             background-image: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
             font-family: 'EB Garamond', serif;
@@ -152,7 +179,7 @@ ui.add_head_html('''
         }
         .tarjeta-vampiro {
             background: linear-gradient(145deg, #1c1c1c, #121212) !important;
-            border: 1px solid #7f1d1d !important; /* Borde rojo sangre oscuro */
+            border: 1px solid #7f1d1d !important;
             box-shadow: 0 6px 15px rgba(153, 27, 27, 0.15) !important;
             border-radius: 8px;
         }
@@ -161,7 +188,6 @@ ui.add_head_html('''
             border-left: 2px solid #7f1d1d;
             box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
         }
-        /* Personalizar el aspecto de las pestañas de NiceGUI/Quasar */
         .q-tab { color: #71717a; }
         .q-tab--active { color: #dc2626 !important; font-weight: bold; }
         .q-tab-panel { background-color: transparent !important; }
@@ -173,8 +199,6 @@ ui.page_title('Vampiro V20 - Creador de Personajes')
 
 # Cabecera inmersiva
 with ui.row().classes('w-full justify-center items-center py-6 bg-black border-b-2 border-red-900 shadow-2xl'):
-    # Si descargas el logo de V20, quita el '#' de la siguiente línea y pon la ruta a tu imagen:
-    # ui.image('logo_v20.png').classes('w-32 mr-6') 
     with ui.column().classes('items-center gap-0'):
         ui.label('VAMPIRO').classes('text-5xl text-red-700 titulo-gotico tracking-widest')
         ui.label('LA MASCARADA').classes('text-xl text-gray-500 titulo-gotico tracking-[0.3em]')
@@ -201,10 +225,19 @@ with ui.row().classes('w-full h-screen no-wrap p-6 gap-6'):
                         ui.input('Crónica:').classes('w-48')
                     
                     with ui.column():
-                        arquetipos = ["Arquitecto", "Autócrata", "Bribón", "Director", "Mártir", "Monstruo", "Sobreviviente"]
+                        arquetipos = [
+                            "Ansioso", "Arquitecto", "Autócrata", "Bizarro", "Bribón", "Bufón", 
+                            "Capitalista", "Celebrante", "Competidor", "Conformista", "Creador", 
+                            "Cuidador", "Defensor", "Director", "Enigma", "Fanático", "Galán", 
+                            "Gurú", "Juez", "Mártir", "Monstruo", "Niño", "Pedagogo", "Penitente", 
+                            "Perfeccionista", "Rebelde", "Sádico", "Sobreviviente", "Solitario", 
+                            "Tradicionalista", "Visionario"
+                        ]
+                        
                         ui.select(arquetipos, label='Naturaleza:', on_change=lambda e: actualizar_guia_desplegable(e, "Naturaleza")).classes('w-48')
                         ui.select(arquetipos, label='Conducta:', on_change=lambda e: actualizar_guia_desplegable(e, "Conducta")).classes('w-48')
-                        ui.input('Concepto:').classes('w-48').on('focus', lambda: texto_guia.set_text("CONCEPTO\n\nEl Concepto es un resumen de quién era tu personaje antes del Abrazo (su vida mortal). Es el ancla de su Humanidad.\n\nEjemplos: 'Policía corrupto', 'Estudiante endeudado', 'Artista torturado'."))
+                        
+                        ui.input('Concepto:').classes('w-48').on('focus', lambda: texto_guia.set_text("CONCEPTO\n\nEl Concepto es un resumen de quién era tu personaje antes del Abrazo (su vida mortal). Es el ancla de su Humanidad.\n\nEjemplos: 'Estudiante endeudado', 'Médico forense', 'Artista torturado', 'Policía corrupto'."))
                     
                     with ui.column():
                         clanes = ['Assamita', 'Brujah', 'Gangrel', 'Giovanni', 'Lasombra', 'Malkavian', 'Nosferatu', 'Ravnos', 'Seguidores de Set', 'Toreador', 'Tremere', 'Tzimisce', 'Ventrue']
@@ -216,19 +249,27 @@ with ui.row().classes('w-full h-screen no-wrap p-6 gap-6'):
             # PESTAÑA ATRIBUTOS
             with ui.tab_panel(tab_atributos):
                 with ui.row().classes('w-full justify-around'):
-                    opciones_prio = ['Primario (7 pts)', 'Secundario (5 pts)', 'Terciario (3 pts)']
+                    opciones_base = ['Primario (7 pts)', 'Secundario (5 pts)', 'Terciario (3 pts)']
+                    
                     for cat_nombre, attrs in atributos.items():
                         with ui.card().classes('w-64 tarjeta-vampiro p-4'):
                             ui.label(cat_nombre).classes('text-xl text-red-600 titulo-gotico mb-2 border-b border-red-900 w-full pb-1')
-                            ui.select(opciones_prio, label='Prioridad', on_change=lambda e, c=cat_nombre: prioridades_attr.update({c: e.value})).classes('w-full mb-4')
                             
-                            for attr_name, val in attrs.items():
+                            opciones_iniciales = [{'label': op, 'value': op, 'disable': False} for op in opciones_base]
+                            
+                            sel = ui.select(opciones_iniciales, label='Prioridad', 
+                                            on_change=lambda e, c=cat_nombre: cambiar_prioridad(e, c)) \
+                                    .classes('w-full mb-4') \
+                                    .props('option-label="label"')
+                            
+                            selects_prioridad[cat_nombre] = sel
+                            
+                            for attr_name in attrs.keys():
                                 with ui.row().classes('items-center justify-between w-full no-wrap mb-1'):
                                     ui.label(attr_name).classes('w-20 text-md text-gray-300')
-                                    lbl_puntos = ui.label("●" * val + "○" * (5 - val)).classes('text-red-700 text-lg font-mono tracking-widest')
-                                    with ui.row().classes('no-wrap gap-1'):
-                                        ui.button('-', on_click=lambda e, c=cat_nombre, a=attr_name, l=lbl_puntos: modificar_atributos(c, a, -1, l)).props('dense size=sm color="dark"')
-                                        ui.button('+', on_click=lambda e, c=cat_nombre, a=attr_name, l=lbl_puntos: modificar_atributos(c, a, 1, l)).props('dense size=sm color="dark"')
+                                    
+                                    dots_container = ui.row().classes('no-wrap items-center gap-0')
+                                    renderizar_puntos(dots_container, cat_nombre, attr_name)
 
             # PESTAÑA HABILIDADES
             with ui.tab_panel(tab_habilidades):
@@ -246,7 +287,7 @@ with ui.row().classes('w-full h-screen no-wrap p-6 gap-6'):
                 with ui.card().classes('w-full tarjeta-vampiro p-8 items-center'):
                     ui.label('Espacio reservado para las Disciplinas, Trasfondos y Virtudes.').classes('text-lg text-gray-400 font-style: italic')
 
-    # Panel Derecho: Guía del Narrador (Ocupa 1/3 del ancho)
+    # Panel Derecho: Guía del Narrador
     with ui.column().classes('w-1/3 panel-lateral p-6 rounded-lg h-full'):
         ui.label('LA BIBLIOTECA OSCURA').classes('text-2xl text-red-700 titulo-gotico mb-4 border-b border-red-900 pb-2 w-full text-center')
         texto_guia = ui.label('Bienvenido, Vástago.\n\nSelecciona opciones en tu hoja de personaje para desvelar los secretos de tu linaje y tu naturaleza.').classes('text-lg text-gray-300 whitespace-pre-line leading-relaxed')
