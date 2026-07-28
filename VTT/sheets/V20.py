@@ -12,6 +12,7 @@
 #*===============================================================================================================================
 
 #* IMPORTS
+from random import randint
 
 #* CLASS "basicV20"
 class basicV20:
@@ -49,3 +50,15 @@ class basicV20:
             weakness,
             experience
         )
+    
+    # Import "Biblioteca Oscura" sheets
+    @classmethod
+    def importSheet(self,sheet):
+        """
+        Imports the data from a "Biblioteca Oscura" character sheet.
+        
+        Arguments
+        ---------
+        sheet
+        """
+        ...
