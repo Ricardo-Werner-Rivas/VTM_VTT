@@ -6,9 +6,6 @@ import inspect
 # ==========================================
 # 1. BASE DE DATOS Y ESTADO DE LA APLICACIÓN
 # ==========================================
-# Aquí guardamos los valores numéricos actuales de la ficha del personaje.
-# Los Atributos y Virtudes empiezan siempre en 1 (el mínimo legal). El resto empieza en 0.
-
 atributos = {
     "Físicos": {"Fuerza": 1, "Destreza": 1, "Resistencia": 1},
     "Sociales": {"Carisma": 1, "Manipulación": 1, "Apariencia": 1},
@@ -22,41 +19,44 @@ habilidades = {
 }
 
 ventajas_valores = {
-    "Disciplinas": {0: 0, 1: 0, 2: 0}, # 3 Huecos vacíos para que el jugador elija
-    "Trasfondos": {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}, # 5 Huecos vacíos
+    "Disciplinas": {0: 0, 1: 0, 2: 0},
+    "Trasfondos": {0: 0, 1: 0, 2: 0, 3: 0, 4: 0},
     "Virtudes": {"Conciencia": 1, "Autocontrol": 1, "Coraje": 1} 
 }
 
-# --- Control de Prioridades ---
-# Estas variables guardan qué prioridad (Primaria, Secundaria, Terciaria) 
-# ha asignado el jugador a cada categoría para calcular los límites matemáticos.
 prioridades_attr = {"Físicos": None, "Sociales": None, "Mentales": None}
 prioridades_hab = {"Talentos": None, "Técnicas": None, "Conocimientos": None}
 
-# --- Control de la Fase de Creación ---
-fase_creacion = {"estado": "base"} # Puede ser "base" o "gratuitos"
+fase_creacion = {"estado": "base"}
 puntos_gratuitos = {"restantes": 15}
 
-# Inicializamos los valores numéricos de las habilidades a 0 dinámicamente
 habilidades_valores = {
     "Talentos": {h: 0 for h in habilidades["Talentos"]},
     "Técnicas": {h: 0 for h in habilidades["Técnicas"]},
     "Conocimientos": {h: 0 for h in habilidades["Conocimientos"]}
 }
 
-# --- Variables de Referencia a la Interfaz (Puentes Gráficos) ---
-# Estos diccionarios guardan la referencia exacta a la caja de la pantalla donde 
-# se dibujan los puntos. Nos permite redibujar un solo atributo sin recargar la web entera.
+especializaciones = {
+    "Talentos": {h: "" for h in habilidades["Talentos"]},
+    "Técnicas": {h: "" for h in habilidades["Técnicas"]},
+    "Conocimientos": {h: "" for h in habilidades["Conocimientos"]}
+}
+
+# NUEVO: Guardamos las compras directas de derivados hechas con Puntos Gratuitos
+mejoras_derivados = {
+    "Humanidad": 0
+}
+
 selects_prioridad = {}
 selects_prioridad_hab = {}
 contenedores_atributos = {}
 contenedores_habilidades = {}
 contenedores_derivados = {}
 contenedores_ventajas = {}
+labels_contadores_attr = {}
+labels_contadores_hab = {}
 
-# Variable global para recordar el clan y aplicar reglas especiales (ej: Nosferatu)
 clan_seleccionado = {"nombre": None}
-
 valores_base_fijos = {}
 label_puntos_gratuitos = {"ui": None}
 
@@ -65,19 +65,41 @@ datos_concepto = {
     "Conducta": "", "Concepto": "", "Generación": "", "Sire": ""
 }
 
-# Diccionarios nuevos para la carga de archivos
+datos_concepto = {
+    "Nombre": "", "Jugador": "", "Crónica": "", "Naturaleza": "",
+    "Conducta": "", "Concepto": "", "Generación": "", "Sire": "",
+    "Detalle_Debilidad": "" # NUEVO: Guarda el texto de la debilidad
+}
+
+# NUEVO: Define qué clanes requieren un campo de texto extra obligatorio
+requisitos_debilidad = {
+    "Malkavian": "Trastorno Mental",
+    "Ravnos": "Vicio o Crimen",
+    "Tzimisce": "Objeto de Apego",
+    "Ventrue": "Restricción de Sangre"
+}
+
+# NUEVO: Costes en puntos de Trasfondo para cada Generación
+costes_generacion = {
+    "13ª Generación": 0,
+    "12ª Generación": 1,
+    "11ª Generación": 2,
+    "10ª Generación": 3,
+    "9ª Generación": 4,
+    "8ª Generación": 5
+}
+
 nombres_ventajas = {
     "Disciplinas": {"0": "", "1": "", "2": ""},
     "Trasfondos": {"0": "", "1": "", "2": "", "3": "", "4": ""}
 }
-referencias_ui = {"clan_select": None, "texto_guia": None}
+referencias_ui = {"clan_select": None, "texto_guia": None, "resumen_dialog": None, "resumen_markdown": None}
+
 
 # ==========================================
-# 2. DICCIONARIOS DE LORE (LA BIBLIOTECA OSCURA)
+# 2. DICCIONARIOS DE LORE 
 # ==========================================
-# Estos diccionarios contienen los textos que se mostrarán en el panel derecho 
-# cuando el jugador pase el ratón por encima de una estadística.
-
+# (Mantenemos los diccionarios limpios y sin cambios)
 lore_clanes = {
     "Assamita": "Los Asesinos y jueces de la Estirpe, originarios de Oriente Medio. Operan de forma independiente y son temidos por su maestría en el asesinato y su sed de sangre vampírica.\n\n• Disciplinas: Celeridad, Extinción, Ofuscación.\n• Debilidad: Adicción a la sangre vampírica (Vitae). Si prueban la sangre de otro vampiro, corren el riesgo de volverse adictos a ella.",
     "Brujah": "Los Brujah son rebeldes, apasionados y violentos. Antaño fueron reyes filósofos en Cartago, pero hoy son conocidos por su furia y su lucha contra el orden establecido.\n\n• Disciplinas: Celeridad, Potencia, Presencia.\n• Debilidad: Su sangre hierve fácilmente; la dificultad de las tiradas para resistir el frenesí aumenta en 2.",
@@ -195,35 +217,70 @@ lore_ventajas = {
     "Fuerza de Voluntad": "Fuerza de Voluntad\n\nTu determinación y fuerza mental. Se usa para resistir poderes sobrenaturales, ignorar heridas o asegurar un éxito crítico. Su valor inicial es igual a tu Coraje."
 }
 
+# NUEVO DICCIONARIO: Relaciona cada clan con sus disciplinas oficiales
+disciplinas_por_clan = {
+    "Assamita": ["Celeridad", "Extinción", "Ofuscación"],
+    "Brujah": ["Celeridad", "Potencia", "Presencia"],
+    "Gangrel": ["Animalismo", "Fortaleza", "Protean"],
+    "Giovanni": ["Dominación", "Nigromancia", "Potencia"],
+    "Lasombra": ["Dominación", "Obtenebración", "Potencia"],
+    "Malkavian": ["Auspex", "Dementación", "Ofuscación"],
+    "Nosferatu": ["Animalismo", "Ofuscación", "Potencia"],
+    "Ravnos": ["Animalismo", "Fortaleza", "Quimerismo"],
+    "Seguidores de Set": ["Ofuscación", "Presencia", "Serpentis"],
+    "Toreador": ["Auspex", "Celeridad", "Presencia"],
+    "Tremere": ["Auspex", "Dominación", "Taumaturgia"],
+    "Tzimisce": ["Animalismo", "Auspex", "Vicisitud"],
+    "Ventrue": ["Dominación", "Fortaleza", "Presencia"]
+}
+
 
 # ==========================================
 # 3. FUNCIONES LÓGICAS (EL CEREBRO DEL SISTEMA)
 # ==========================================
 
-# --- Funciones de Lectura del Lore ---
 def actualizar_guia_clan(evento):
     clan = evento.value
-    if not clan: return # Si el valor es None, salimos de la función
+    if not clan: return 
     
     clan_seleccionado["nombre"] = clan
     
+    # Lógica de Nosferatu (Apariencia 0)
     if clan == "Nosferatu":
         atributos["Sociales"]["Apariencia"] = 0
         if "Apariencia" in contenedores_atributos:
             renderizar_puntos(contenedores_atributos["Apariencia"], "Sociales", "Apariencia")
+            actualizar_contador_attr("Sociales")
     elif atributos["Sociales"]["Apariencia"] == 0:
         atributos["Sociales"]["Apariencia"] = 1
         if "Apariencia" in contenedores_atributos:
             renderizar_puntos(contenedores_atributos["Apariencia"], "Sociales", "Apariencia")
+            actualizar_contador_attr("Sociales")
 
+    # Lógica de Disciplinas predictivas
+    opciones_disciplinas = disciplinas_por_clan.get(clan, [])
+    for sel in referencias_ui.get("selectores_disciplinas", []):
+        sel.options = opciones_disciplinas
+        sel.update()
+        
+    # NUEVA LÓGICA: Debilidades específicas que requieren texto
+    if clan in requisitos_debilidad:
+        referencias_ui["input_debilidad"].set_visibility(True)
+        referencias_ui["input_debilidad"].label = requisitos_debilidad[clan]
+        referencias_ui["input_debilidad"].update()
+    elif "input_debilidad" in referencias_ui:
+        referencias_ui["input_debilidad"].set_visibility(False)
+        datos_concepto["Detalle_Debilidad"] = "" # Limpiamos el texto si cambia a un clan normal
+        referencias_ui["input_debilidad"].update()
+
+    # Actualizar texto lateral
     info = lore_clanes.get(clan, "Información de este clan no disponible aún.")
-    # Usamos referencias_ui para evitar el error de "no definido"
     if referencias_ui.get("texto_guia"):
         referencias_ui["texto_guia"].set_text(f"CLAN {clan.upper()}\n\n{info}")
 
 def actualizar_guia_desplegable(evento, categoria):
     seleccion = evento.value
-    if not seleccion: return # Evita el error 'NoneType'
+    if not seleccion: return 
     
     info_general = lore_conceptos.get(categoria, "")
     info_especifica = lore_opciones_concepto.get(seleccion, "Información no disponible.")
@@ -231,6 +288,52 @@ def actualizar_guia_desplegable(evento, categoria):
     
     if referencias_ui.get("texto_guia"):
         referencias_ui["texto_guia"].set_text(texto_combinado)
+        
+def actualizar_generacion(evento):
+    """Actualiza la guía lateral y asigna automáticamente los puntos de Trasfondo."""
+    # 1. Primero, mantenemos la lógica anterior de mostrar la guía en el panel derecho
+    actualizar_guia_desplegable(evento, "Generación")
+    
+    seleccion = evento.value
+    if not seleccion: return
+    
+    # 2. Obtenemos el coste matemático
+    coste = costes_generacion.get(seleccion, 0)
+    
+    # 3. Buscamos si ya existe el trasfondo "Generación" o buscamos un hueco vacío
+    indice_generacion = None
+    indice_vacio = None
+    
+    for i in range(5):
+        # Leemos lo que hay escrito en las cajas, en minúsculas para evitar errores
+        nombre_actual = nombres_ventajas["Trasfondos"].get(str(i), "").strip().lower()
+        
+        # Eliminamos las tildes para la comparación por si el usuario lo escribió a mano
+        if nombre_actual in ["generación", "generacion"]:
+            indice_generacion = i
+            break
+        elif nombre_actual == "" and indice_vacio is None:
+            indice_vacio = i
+            
+    # 4. Si no existe y necesitamos asignar puntos, lo metemos en un hueco vacío
+    if indice_generacion is None and coste > 0:
+        if indice_vacio is not None:
+            indice_generacion = indice_vacio
+            nombres_ventajas["Trasfondos"][str(indice_generacion)] = "Generación"
+            
+            # Actualizamos visualmente la caja de texto en la web
+            if "inputs_trasfondos" in referencias_ui:
+                referencias_ui["inputs_trasfondos"][indice_generacion].value = "Generación"
+        else:
+            ui.notify("No hay huecos vacíos en Trasfondos para auto-asignar tu Generación.", type='warning')
+            return
+            
+    # 5. Asignamos los puntos a la base de datos y redibujamos la pantalla
+    if indice_generacion is not None:
+        ventajas_valores["Trasfondos"][indice_generacion] = coste
+        clave_str = f"Trasfondos_{indice_generacion}"
+        if clave_str in contenedores_ventajas:
+            renderizar_puntos_ventajas(contenedores_ventajas[clave_str], "Trasfondos", indice_generacion)
 
 def actualizar_guia_atributo(atributo):
     info = lore_atributos.get(atributo, "Información no disponible.")
@@ -247,75 +350,90 @@ def actualizar_guia_ventaja(ventaja):
     if referencias_ui.get("texto_guia"):
         referencias_ui["texto_guia"].set_text(f"VENTAJA\n\n{info}")
 
+def actualizar_contador_attr(categoria):
+    if categoria not in labels_contadores_attr: return
+    prio_texto = prioridades_attr[categoria]
+    if not prio_texto:
+        labels_contadores_attr[categoria].set_text("")
+        return
+        
+    max_pts = 7 if "7" in prio_texto else (5 if "5" in prio_texto else 3)
+    gastados = sum(max(0, atributos[categoria][a] - 1) for a in atributos[categoria])
+    color = "text-green-500 font-bold" if gastados == max_pts else "text-gray-400"
+    labels_contadores_attr[categoria].set_text(f"Gastados: {gastados}/{max_pts}").classes(replace=f'text-sm mb-2 {color}')
 
-# --- Funciones de Prioridades (Intercambio automático) ---
+def actualizar_contador_hab(categoria):
+    if categoria not in labels_contadores_hab: return
+    prio_texto = prioridades_hab[categoria]
+    if not prio_texto:
+        labels_contadores_hab[categoria].set_text("")
+        return
+        
+    max_pts = 13 if "13" in prio_texto else (9 if "9" in prio_texto else 5)
+    gastados = sum(habilidades_valores[categoria].values())
+    color = "text-green-500 font-bold" if gastados == max_pts else "text-gray-400"
+    labels_contadores_hab[categoria].set_text(f"Gastados: {gastados}/{max_pts}").classes(replace=f'text-sm mb-2 {color}')
+
 def cambiar_prioridad(evento, categoria_actual):
-    """Controla los menús de 7/5/3 puntos de los atributos impidiendo duplicados."""
     nueva_prioridad = evento.value
     
-    # Si el usuario borra la selección con la 'X'
     if not nueva_prioridad:
         prioridades_attr[categoria_actual] = None
+        actualizar_contador_attr(categoria_actual)
         return
 
-    # Robo automático: Si otra categoría ya tiene esta prioridad, se la quitamos
     for cat, select in selects_prioridad.items():
         if cat != categoria_actual and select.value == nueva_prioridad:
-            select.value = None # Vaciamos el desplegable de la otra categoría visualmente
-            prioridades_attr[cat] = None # Lo vaciamos lógicamente
+            select.value = None 
+            prioridades_attr[cat] = None 
+            actualizar_contador_attr(cat)
             ui.notify(f"La prioridad '{nueva_prioridad}' se ha movido de {cat} a {categoria_actual}.", type='info')
 
-    # Guardamos la nueva selección definitiva
     prioridades_attr[categoria_actual] = nueva_prioridad
+    actualizar_contador_attr(categoria_actual)
 
 def cambiar_prioridad_hab(evento, categoria_actual):
-    """Funciona igual que cambiar_prioridad pero para los menús de 13/9/5 de las habilidades."""
     nueva_prioridad = evento.value
     if not nueva_prioridad:
         prioridades_hab[categoria_actual] = None
+        actualizar_contador_hab(categoria_actual)
         return
 
     for cat, select in selects_prioridad_hab.items():
         if cat != categoria_actual and select.value == nueva_prioridad:
             select.value = None
             prioridades_hab[cat] = None
+            actualizar_contador_hab(cat)
             ui.notify(f"La prioridad '{nueva_prioridad}' se ha movido de {cat} a {categoria_actual}.", type='info')
 
     prioridades_hab[categoria_actual] = nueva_prioridad
+    actualizar_contador_hab(categoria_actual)
 
-
-# --- Funciones Matemáticas y de Puntos (Reglas de V20) ---
 def intentar_cambiar_puntos(categoria, atributo, nuevo_valor, container):
-    """Verifica si es legal subir o bajar un Atributo y redibuja los puntos."""
-    # Bloqueo absoluto para Nosferatu
     if clan_seleccionado.get("nombre") == "Nosferatu" and atributo == "Apariencia":
         ui.notify("La maldición Nosferatu impide aumentar la Apariencia.", type='negative')
         return
 
-    # Verificación de que haya una prioridad elegida
     prio_texto = prioridades_attr[categoria]
     if not prio_texto:
         ui.notify(f"Selecciona primero una prioridad para los atributos {categoria}.", type='warning')
         return
 
-    # Determinamos el límite máximo según el texto elegido
     max_pts = 7 if "7" in prio_texto else (5 if "5" in prio_texto else 3)
     old_value = atributos[categoria][atributo]
     
-    # Sistema de alternancia: Si haces clic en tu valor actual, se resta un punto para poder borrarlo
     if nuevo_valor == old_value:
         nuevo_valor -= 1
         
     delta = nuevo_valor - old_value
     if delta == 0: return
 
-    # --- NUEVA BIFURCACIÓN: FASE DE PUNTOS GRATUITOS ---
     if fase_creacion.get("estado") == "gratuitos":
         base_fija = valores_base_fijos["atributos"][categoria][atributo]
         if nuevo_valor < base_fija:
             ui.notify("No puedes reducir una estadística por debajo de su valor base.", type='warning')
             return
-        coste = delta * 5 # Coste V20: 5 PG por punto
+        coste = delta * 5 
         if puntos_gratuitos["restantes"] - coste < 0:
             ui.notify("No tienes Puntos Gratuitos suficientes.", type='negative')
             return
@@ -325,22 +443,19 @@ def intentar_cambiar_puntos(categoria, atributo, nuevo_valor, container):
         renderizar_puntos(container, categoria, atributo)
         return
   
-    if delta > 0: # Si intentas sumar puntos
-        # Sumamos los puntos gastados asegurándonos de que la Apariencia 0 no rompa la matemática
+    if delta > 0: 
         gastados = sum(max(0, atributos[categoria][a] - 1) for a in atributos[categoria])
         if gastados + delta > max_pts:
             ui.notify(f"Límite de {max_pts} alcanzado en {categoria}.", type='info')
             return
-    elif delta < 0: # Si intentas restar puntos
-        if nuevo_valor < 1:
-            nuevo_valor = 1 # Regla V20: Los atributos no bajan de 1
+    elif delta < 0: 
+        if nuevo_valor < 1: nuevo_valor = 1 
 
-    # Aplicamos el cambio y redibujamos la interfaz
     atributos[categoria][atributo] = nuevo_valor
     renderizar_puntos(container, categoria, atributo)
+    actualizar_contador_attr(categoria)
 
 def intentar_cambiar_puntos_hab(categoria, habilidad, nuevo_valor, container):
-    """Verifica si es legal subir o bajar una Habilidad y redibuja los puntos."""
     prio_texto = prioridades_hab[categoria]
     if not prio_texto:
         ui.notify(f"Selecciona primero una prioridad para {categoria}.", type='warning')
@@ -349,30 +464,31 @@ def intentar_cambiar_puntos_hab(categoria, habilidad, nuevo_valor, container):
     max_pts = 13 if "13" in prio_texto else (9 if "9" in prio_texto else 5)
     old_value = habilidades_valores[categoria][habilidad]
     
-    if nuevo_valor == old_value:
-        nuevo_valor -= 1
+    if nuevo_valor == old_value: nuevo_valor -= 1
         
     delta = nuevo_valor - old_value
     if delta == 0: return
 
-    # --- NUEVA BIFURCACIÓN: FASE DE PUNTOS GRATUITOS ---
     if fase_creacion.get("estado") == "gratuitos":
         base_fija = valores_base_fijos["habilidades"][categoria][habilidad]
         if nuevo_valor < base_fija:
             ui.notify("No puedes reducir una estadística por debajo de su valor base.", type='warning')
             return
-        coste = delta * 2 # Coste V20: 2 PG por punto
+        coste = delta * 2
         if puntos_gratuitos["restantes"] - coste < 0:
             ui.notify("No tienes Puntos Gratuitos suficientes.", type='negative')
             return
         puntos_gratuitos["restantes"] -= coste
         label_puntos_gratuitos["ui"].set_text(f'Puntos Gratuitos Restantes: {puntos_gratuitos["restantes"]}')
         habilidades_valores[categoria][habilidad] = nuevo_valor
+        
+        if nuevo_valor < 4:
+            especializaciones[categoria][habilidad] = ""
+            
         renderizar_puntos_hab(container, categoria, habilidad)
         return
    
     if delta > 0:
-        # Regla estricta V20: En la fase inicial ninguna habilidad supera el 3
         if nuevo_valor > 3:
             ui.notify("Regla V20: En esta fase, ninguna habilidad puede superar los 3 puntos.", type='negative')
             return
@@ -383,41 +499,55 @@ def intentar_cambiar_puntos_hab(categoria, habilidad, nuevo_valor, container):
             return
             
     elif delta < 0:
-        if nuevo_valor < 0:
-            nuevo_valor = 0 # Las habilidades sí pueden quedarse a 0
+        if nuevo_valor < 0: nuevo_valor = 0 
 
     habilidades_valores[categoria][habilidad] = nuevo_valor
     renderizar_puntos_hab(container, categoria, habilidad)
+    actualizar_contador_hab(categoria)
 
 def intentar_cambiar_puntos_ventajas(categoria, clave, nuevo_valor, container):
-    """Controla los límites estrictos de Disciplinas(3), Trasfondos(5) y Virtudes(7)."""
     if categoria == "Disciplinas": max_pts = 3
     elif categoria == "Trasfondos": max_pts = 5
     elif categoria == "Virtudes": max_pts = 7
     
     old_value = ventajas_valores[categoria][clave]
-    
-    if nuevo_valor == old_value:
-        nuevo_valor -= 1
+    if nuevo_valor == old_value: nuevo_valor -= 1
         
     delta = nuevo_valor - old_value
     if delta == 0: return
 
-    # --- NUEVA BIFURCACIÓN: FASE DE PUNTOS GRATUITOS ---
     if fase_creacion.get("estado") == "gratuitos":
-        base_fija = valores_base_fijos["ventajas"][categoria][clave]
+        # SOLUCIÓN: Acceso seguro. Si no existe la foto base (al cargar un json), asumimos el límite inferior legal.
+        if "ventajas" in valores_base_fijos and categoria in valores_base_fijos["ventajas"]:
+            base_fija = valores_base_fijos["ventajas"][categoria][clave]
+        else:
+            base_fija = 1 if categoria == "Virtudes" else 0
+
         if nuevo_valor < base_fija:
             ui.notify("No puedes reducir una estadística por debajo de su valor base.", type='warning')
             return
             
-        # Determinar el coste según la tabla
-        if categoria == "Disciplinas": multiplicador = 7
+        if categoria == "Disciplinas":
+            clan_actual = clan_seleccionado.get("nombre")
+            valor_texto = nombres_ventajas["Disciplinas"].get(str(clave))
+            nombre_disciplina = (valor_texto if valor_texto is not None else "").strip()
+            
+            if not nombre_disciplina:
+                ui.notify("Primero escribe o selecciona el nombre de la Disciplina.", type='warning')
+                return
+                
+            es_de_clan = nombre_disciplina in disciplinas_por_clan.get(clan_actual, [])
+            multiplicador = 7 if es_de_clan else 10 
+            
         elif categoria == "Trasfondos": multiplicador = 1
         elif categoria == "Virtudes": multiplicador = 2
         
         coste = delta * multiplicador
         if puntos_gratuitos["restantes"] - coste < 0:
-            ui.notify("No tienes Puntos Gratuitos suficientes.", type='negative')
+            mensaje = "No tienes Puntos Gratuitos suficientes"
+            if categoria == "Disciplinas" and not es_de_clan:
+                mensaje += " (recuerda que una disciplina fuera de clan cuesta más)."
+            ui.notify(mensaje, type='negative')
             return
             
         puntos_gratuitos["restantes"] -= coste
@@ -429,10 +559,8 @@ def intentar_cambiar_puntos_ventajas(categoria, clave, nuevo_valor, container):
             
     if delta > 0:
         if categoria == "Virtudes":
-            # Las virtudes empiezan en 1, así que restamos 1 al contar los gastados
             gastados = sum(ventajas_valores[categoria][v] - 1 for v in ventajas_valores[categoria])
         else:
-            # Disciplinas y Trasfondos empiezan en 0
             gastados = sum(ventajas_valores[categoria].values())
             
         if gastados + delta > max_pts:
@@ -440,25 +568,50 @@ def intentar_cambiar_puntos_ventajas(categoria, clave, nuevo_valor, container):
             return
             
     elif delta < 0:
-        # Límite inferior: Las virtudes no bajan de 1, el resto baja a 0
         limite_inf = 1 if categoria == "Virtudes" else 0
-        if nuevo_valor < limite_inf:
-            nuevo_valor = limite_inf
+        if nuevo_valor < limite_inf: nuevo_valor = limite_inf
 
     ventajas_valores[categoria][clave] = nuevo_valor
     renderizar_puntos_ventajas(container, categoria, clave)
+    if categoria == "Virtudes": actualizar_derivados()
+
+# NUEVO: Lógica para controlar la compra de Humanidad interactiva
+def intentar_cambiar_humanidad(nuevo_valor, container):
+    """Calcula si es válido aumentar/disminuir la Humanidad directamente."""
+    if fase_creacion.get("estado") != "gratuitos":
+        ui.notify("Solo puedes comprar Humanidad directa en la fase de Puntos Gratuitos.", type='warning')
+        return
+
+    # La Humanidad no puede bajar de la suma de Conciencia y Autocontrol de la ficha
+    base = ventajas_valores["Virtudes"]["Conciencia"] + ventajas_valores["Virtudes"]["Autocontrol"]
+    valor_actual = base + mejoras_derivados["Humanidad"]
+
+    if nuevo_valor == valor_actual: 
+        nuevo_valor -= 1
+
+    delta = nuevo_valor - valor_actual
+    if delta == 0: return
+
+    if nuevo_valor < base:
+        ui.notify("No puedes reducir tu Humanidad por debajo de la base de tus Virtudes.", type='warning')
+        return
+
+    # Si prefieres jugar con la regla homebrew de 1 PG, cambia este '2' por un '1'
+    coste = delta * 2
+
+    if puntos_gratuitos["restantes"] - coste < 0:
+        ui.notify("No tienes Puntos Gratuitos suficientes.", type='negative')
+        return
+
+    puntos_gratuitos["restantes"] -= coste
+    label_puntos_gratuitos["ui"].set_text(f'Puntos Gratuitos Restantes: {puntos_gratuitos["restantes"]}')
     
-    # Actualización en tiempo real: Si tocamos una Virtud, forzamos el cálculo de Humanidad/FdV
-    if categoria == "Virtudes":
-        actualizar_derivados()
+    mejoras_derivados["Humanidad"] += delta
+    actualizar_derivados()
 
-
-# --- Funciones de Renderizado Gráfico ---
 def renderizar_puntos(container, categoria, atributo):
-    """Borra el contenedor visual y dibuja 5 puntos ('●' o '○') para un atributo."""
     container.clear()
     valor = atributos[categoria][atributo]
-    
     with container:
         for i in range(1, 6):
             dot_text = "●" if i <= valor else "○"
@@ -467,22 +620,23 @@ def renderizar_puntos(container, categoria, atributo):
             ).on('click', lambda e, cat=categoria, attr=atributo, nv=i, cont=container: intentar_cambiar_puntos(cat, attr, nv, cont))
 
 def renderizar_puntos_hab(container, categoria, habilidad):
-    """Dibuja 5 puntos para una habilidad (fuente algo más pequeña para que quepan bien las listas largas)."""
     container.clear()
     valor = habilidades_valores[categoria][habilidad]
-    
     with container:
-        for i in range(1, 6):
-            dot_text = "●" if i <= valor else "○"
-            ui.label(dot_text).classes(
-                'text-red-700 text-xl font-mono cursor-pointer mx-[1px] select-none hover:text-red-400 transition-colors'
-            ).on('click', lambda e, cat=categoria, hab=habilidad, nv=i, cont=container: intentar_cambiar_puntos_hab(cat, hab, nv, cont))
+        with ui.row().classes('no-wrap items-center gap-0 w-full justify-between'):
+            puntos_box = ui.row().classes('no-wrap items-center gap-0')
+            with puntos_box:
+                for i in range(1, 6):
+                    dot_text = "●" if i <= valor else "○"
+                    ui.label(dot_text).classes(
+                        'text-red-700 text-xl font-mono cursor-pointer mx-[1px] select-none hover:text-red-400 transition-colors'
+                    ).on('click', lambda e, cat=categoria, hab=habilidad, nv=i, cont=container: intentar_cambiar_puntos_hab(cat, hab, nv, cont))
+            if valor >= 4:
+                ui.input(placeholder='Especialidad').bind_value(especializaciones[categoria], habilidad).classes('w-32 text-xs ml-4')
 
 def renderizar_puntos_ventajas(container, categoria, clave):
-    """Dibuja 5 puntos para una Ventaja, Virtud o Trasfondo."""
     container.clear()
     valor = ventajas_valores[categoria][clave]
-    
     with container:
         for i in range(1, 6):
             dot_text = "●" if i <= valor else "○"
@@ -491,26 +645,41 @@ def renderizar_puntos_ventajas(container, categoria, clave):
             ).on('click', lambda e, cat=categoria, c=clave, nv=i, cont=container: intentar_cambiar_puntos_ventajas(cat, c, nv, cont))
 
 def actualizar_derivados():
-    """Calcula la Humanidad y la Fuerza de Voluntad inicial basándose en las Virtudes."""
-    humanidad_val = ventajas_valores["Virtudes"]["Conciencia"] + ventajas_valores["Virtudes"]["Autocontrol"]
+    # NUEVO: Sumamos la mejora directa comprada a la base que dan las virtudes
+    base_humanidad = ventajas_valores["Virtudes"]["Conciencia"] + ventajas_valores["Virtudes"]["Autocontrol"]
+    humanidad_val = base_humanidad + mejoras_derivados["Humanidad"]
+    
     fdv_val = ventajas_valores["Virtudes"]["Coraje"]
     
-    if "Humanidad" in contenedores_derivados:
-        renderizar_puntos_derivados(contenedores_derivados["Humanidad"], humanidad_val)
-    if "Fuerza de Voluntad" in contenedores_derivados:
+    if "Humanidad" in contenedores_derivados: 
+        contenedores_derivados["Humanidad"].clear()
+        with contenedores_derivados["Humanidad"]:
+            for i in range(1, 11): 
+                dot_text = "●" if i <= humanidad_val else "○"
+                # Ahora la Humanidad tiene evento onClick propio para su compra
+                ui.label(dot_text).classes(
+                    'text-red-700 text-2xl font-mono mx-[1px] cursor-pointer select-none hover:text-red-400 transition-colors'
+                ).on('click', lambda e, nv=i, cont=contenedores_derivados["Humanidad"]: intentar_cambiar_humanidad(nv, cont))
+                
+    if "Fuerza de Voluntad" in contenedores_derivados: 
+        # La FdV la dejamos como de solo lectura por el momento
         renderizar_puntos_derivados(contenedores_derivados["Fuerza de Voluntad"], fdv_val)
 
 def renderizar_puntos_derivados(container, valor):
-    """Dibuja los puntos para estadísticas que llegan hasta 10 (no hasta 5). Son de sólo lectura."""
     container.clear()
     with container:
-        # Bucle hasta 11 para que imprima 10 círculos en total
         for i in range(1, 11): 
             dot_text = "●" if i <= valor else "○"
             ui.label(dot_text).classes('text-red-700 text-2xl font-mono mx-[1px] select-none')
             
 def validar_ficha_base(pestañas, pestaña_destino):
     errores = []
+    
+    # NUEVO: Validar que la debilidad específica esté rellena
+    clan_actual = clan_seleccionado.get("nombre")
+    if clan_actual in requisitos_debilidad:
+        if not datos_concepto.get("Detalle_Debilidad", "").strip():
+            errores.append(f"Por ser {clan_actual}, debes especificar tu {requisitos_debilidad[clan_actual]}.")
 
     if not all(prioridades_attr.values()): errores.append("Falta asignar prioridades a los Atributos.")
     else:
@@ -535,25 +704,27 @@ def validar_ficha_base(pestañas, pestaña_destino):
     else:
         ui.notify("¡Ficha base completada! Entrando en fase de Puntos Gratuitos.", type='positive')
         
-        # Guardamos la foto fija de la ficha para evitar que el jugador reste puntos base
         valores_base_fijos["atributos"] = copy.deepcopy(atributos)
         valores_base_fijos["habilidades"] = copy.deepcopy(habilidades_valores)
         valores_base_fijos["ventajas"] = copy.deepcopy(ventajas_valores)
         
         fase_creacion["estado"] = "gratuitos"
-        pestaña_destino.enable() # Desbloqueamos la pestaña 5
-        pestañas.value = pestaña_destino # Llevamos al jugador allí
+        pestaña_destino.enable() 
+        pestañas.value = pestaña_destino 
         
         if label_puntos_gratuitos["ui"]:
             label_puntos_gratuitos["ui"].set_text(f'Puntos Gratuitos Restantes: {puntos_gratuitos["restantes"]}')
             
 def descargar_ficha():
+    # Añadido mejoras_derivados al JSON descargable
     ficha_completa = {
         "Concepto": datos_concepto,
         "Clan": clan_seleccionado["nombre"],
         "Atributos": atributos,
         "Habilidades": habilidades_valores,
+        "Especializaciones": especializaciones,
         "Ventajas": ventajas_valores,
+        "Mejoras_Derivados": mejoras_derivados,
         "Nombres_Disciplinas": nombres_ventajas["Disciplinas"],
         "Nombres_Trasfondos": nombres_ventajas["Trasfondos"],
         "Puntos_Gratuitos_Sobrantes": puntos_gratuitos["restantes"]
@@ -568,143 +739,166 @@ def descargar_ficha():
     
 async def cargar_ficha(evento):
     try:
-        # 1. Leer los bytes directamente del objeto subido.
-        # Distintas versiones de NiceGUI exponen el archivo de forma distinta
-        # (evento.content, evento.file, o incluso evento.content ya ausente
-        # y sustituido por un UploadFile de FastAPI/Starlette con métodos
-        # asíncronos). Probamos las variantes conocidas en orden y usamos
-        # 'await' cuando el resultado es una corrutina.
         archivo = getattr(evento, 'content', None) or getattr(evento, 'file', None)
+        if archivo is None: raise AttributeError("No se encontró el contenido del archivo.")
 
-        if archivo is None:
-            raise AttributeError(
-                f"No se encontró el contenido del archivo en el evento. "
-                f"Atributos disponibles: {[a for a in dir(evento) if not a.startswith('_')]}"
-            )
-
-        # Rebobinamos el cursor por si el objeto ya fue leído internamente antes de llegar aquí
         if hasattr(archivo, 'seek'):
             resultado_seek = archivo.seek(0)
-            if inspect.isawaitable(resultado_seek):
-                await resultado_seek
+            if inspect.isawaitable(resultado_seek): await resultado_seek
 
         datos_brutos = archivo.read()
-        if inspect.isawaitable(datos_brutos):
-            datos_brutos = await datos_brutos
+        if inspect.isawaitable(datos_brutos): datos_brutos = await datos_brutos
         
-        # 2. Decodificarlos a texto (utf-8-sig elimina caracteres ocultos invisibles de Windows)
         contenido = datos_brutos.decode('utf-8-sig').strip()
-        
-        # 3. Parsear el texto a un diccionario de Python
         datos = json.loads(contenido)
         
-        # 4. Cargar textos del Concepto
         datos_concepto.update(datos.get("Concepto", {}))
-        
-        # 5. Cargar Nombres de las Ventajas
         nombres_ventajas["Disciplinas"].update(datos.get("Nombres_Disciplinas", {}))
         nombres_ventajas["Trasfondos"].update(datos.get("Nombres_Trasfondos", {}))
         
-        # 6. Cargar Clan y actualizar el menú desplegable visualmente
-        if datos.get("Clan") and referencias_ui.get("clan_select"):
-            referencias_ui["clan_select"].value = datos.get("Clan")
+        if datos.get("Clan") and referencias_ui.get("clan_select"): referencias_ui["clan_select"].value = datos.get("Clan")
             
-        # 7. Cargar y redibujar Atributos
         for cat, attrs in datos.get("Atributos", {}).items():
             atributos[cat].update(attrs)
+            if cat in prioridades_attr and prioridades_attr[cat]: actualizar_contador_attr(cat)
             for attr in attrs:
-                if attr in contenedores_atributos:
-                    renderizar_puntos(contenedores_atributos[attr], cat, attr)
+                if attr in contenedores_atributos: renderizar_puntos(contenedores_atributos[attr], cat, attr)
                     
-        # 8. Cargar y redibujar Habilidades
+        if "Especializaciones" in datos:
+            for cat, especs in datos["Especializaciones"].items(): especializaciones[cat].update(especs)
+
         for cat, habs in datos.get("Habilidades", {}).items():
             habilidades_valores[cat].update(habs)
+            if cat in prioridades_hab and prioridades_hab[cat]: actualizar_contador_hab(cat)
             for hab in habs:
-                if hab in contenedores_habilidades:
-                    renderizar_puntos_hab(contenedores_habilidades[hab], cat, hab)
+                if hab in contenedores_habilidades: renderizar_puntos_hab(contenedores_habilidades[hab], cat, hab)
                     
-        # 9. Cargar y redibujar Ventajas
         for cat, vent in datos.get("Ventajas", {}).items():
             for k, v in vent.items():
                 clave = int(k) if k.isdigit() else k
                 ventajas_valores[cat][clave] = v
                 clave_str = f"{cat}_{clave}"
-                if clave_str in contenedores_ventajas:
-                    renderizar_puntos_ventajas(contenedores_ventajas[clave_str], cat, clave)
+                if clave_str in contenedores_ventajas: renderizar_puntos_ventajas(contenedores_ventajas[clave_str], cat, clave)
                     
+        # NUEVO: Cargamos las compras de Humanidad si las hubiera
+        if "Mejoras_Derivados" in datos:
+            mejoras_derivados.update(datos["Mejoras_Derivados"])
+            
         actualizar_derivados()
         
-        # 10. Cargar Puntos Gratuitos y cambiar fase si es una ficha avanzada
         if "Puntos_Gratuitos_Sobrantes" in datos:
             puntos_gratuitos["restantes"] = datos["Puntos_Gratuitos_Sobrantes"]
             fase_creacion["estado"] = "gratuitos"
-            if label_puntos_gratuitos.get("ui"):
-                label_puntos_gratuitos["ui"].set_text(f'Puntos Gratuitos Restantes: {puntos_gratuitos["restantes"]}')
+            if label_puntos_gratuitos.get("ui"): label_puntos_gratuitos["ui"].set_text(f'Puntos Gratuitos Restantes: {puntos_gratuitos["restantes"]}')
                 
-        ui.notify("¡Ficha cargada con éxito! Revisa todas las pestañas.", type='positive')
+        ui.notify("¡Ficha cargada con éxito!", type='positive')
         
     except Exception as ex:
-        print(f"Error al cargar la ficha: {ex}")
         ui.notify(f"Error al cargar: {ex}", type='negative')
 
-# ==========================================
-# 4. ESTILOS GRÁFICOS Y AMBIENTACIÓN (CSS)
-# ==========================================
-# Inyectamos estilos directamente a la web para transformar la interfaz
-# y darle ese toque oscuro y gótico de Vampiro: La Mascarada.
+def generar_texto_resumen():
+    concepto = datos_concepto
+    lineas = []
 
+    lineas.append(f"## {concepto.get('Nombre') or 'Vástago sin nombre'}")
+    lineas.append(f"**Jugador:** {concepto.get('Jugador') or '—'}  |  **Crónica:** {concepto.get('Crónica') or '—'}  ")
+    lineas.append(f"**Clan:** {clan_seleccionado.get('nombre') or '—'}  |  **Generación:** {concepto.get('Generación') or '—'}  ")
+    lineas.append(f"**Naturaleza:** {concepto.get('Naturaleza') or '—'}  |  **Conducta:** {concepto.get('Conducta') or '—'}  ")
+    lineas.append(f"**Concepto:** {concepto.get('Concepto') or '—'}  |  **Sire:** {concepto.get('Sire') or '—'}  ")
+    lineas.append("---")
+
+    lineas.append("### Atributos")
+    for cat, attrs in atributos.items():
+        valores = "  ·  ".join(f"{nombre}: {val}" for nombre, val in attrs.items())
+        lineas.append(f"**{cat}:** {valores}  ")
+    lineas.append("---")
+
+    lineas.append("### Habilidades")
+    for cat, habs in habilidades_valores.items():
+        con_puntos = {h: v for h, v in habs.items() if v > 0}
+        if con_puntos:
+            valores = []
+            for nombre, val in con_puntos.items():
+                espec = especializaciones[cat].get(nombre, "")
+                txt = f"{nombre}: {val}" + (f" ({espec})" if espec else "")
+                valores.append(txt)
+            lineas.append(f"**{cat}:** {'  ·  '.join(valores)}  ")
+        else:
+            lineas.append(f"**{cat}:** *(ninguna)*  ")
+    lineas.append("---")
+
+    lineas.append("### Ventajas")
+    disciplinas_txt = []
+    for i in range(3):
+        # SOLUCIÓN: Convertimos de manera segura cualquier 'None' a una cadena vacía antes de hacer .strip()
+        valor_bruto = nombres_ventajas["Disciplinas"].get(str(i))
+        nombre = (valor_bruto if valor_bruto is not None else "").strip()
+        valor = ventajas_valores["Disciplinas"].get(i, 0)
+        if nombre or valor: disciplinas_txt.append(f"{nombre or f'Disciplina {i + 1}'}: {valor}")
+    lineas.append(f"**Disciplinas:** {'  ·  '.join(disciplinas_txt) if disciplinas_txt else '*(ninguna)*'}  ")
+
+    trasfondos_txt = []
+    for i in range(5):
+        # SOLUCIÓN: Repetimos la protección segura para los Trasfondos
+        valor_bruto_tras = nombres_ventajas["Trasfondos"].get(str(i))
+        nombre = (valor_bruto_tras if valor_bruto_tras is not None else "").strip()
+        valor = ventajas_valores["Trasfondos"].get(i, 0)
+        if nombre or valor: trasfondos_txt.append(f"{nombre or f'Trasfondo {i + 1}'}: {valor}")
+    lineas.append(f"**Trasfondos:** {'  ·  '.join(trasfondos_txt) if trasfondos_txt else '*(ninguno)*'}  ")
+
+    virtudes_txt = "  ·  ".join(f"{v}: {ventajas_valores['Virtudes'][v]}" for v in ventajas_valores["Virtudes"])
+    lineas.append(f"**Virtudes:** {virtudes_txt}  ")
+    lineas.append("---")
+
+    base_hum = ventajas_valores["Virtudes"]["Conciencia"] + ventajas_valores["Virtudes"]["Autocontrol"]
+    humanidad = base_hum + mejoras_derivados.get("Humanidad", 0)
+    fdv = ventajas_valores["Virtudes"]["Coraje"]
+    lineas.append("### Rasgos Derivados")
+    lineas.append(f"**Humanidad:** {humanidad} / 10  |  **Fuerza de Voluntad:** {fdv} / 10  ")
+
+    if fase_creacion["estado"] == "gratuitos":
+        lineas.append("---")
+        lineas.append(f"**Puntos Gratuitos Restantes:** {puntos_gratuitos.get('restantes', 15)}")
+
+    return "\n\n".join(lineas)
+
+def mostrar_resumen():
+    texto = generar_texto_resumen()
+    if referencias_ui.get("resumen_markdown"): referencias_ui["resumen_markdown"].set_content(texto)
+    if referencias_ui.get("resumen_dialog"): referencias_ui["resumen_dialog"].open()
+
+
+# ==========================================
+# 4. ESTILOS GRÁFICOS Y AMBIENTACIÓN 
+# ==========================================
 ui.dark_mode().enable()
 
 ui.add_head_html('''
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=EB+Garamond:wght@400;700&display=swap');
         
-        body {
-            background-color: #0a0a0a;
-            background-image: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
-            font-family: 'EB Garamond', serif;
-            color: #d4d4d8;
-        }
-        .titulo-gotico {
-            font-family: 'Cinzel', serif;
-            text-shadow: 2px 2px 5px #000000;
-        }
-        .tarjeta-vampiro {
-            background: linear-gradient(145deg, #1c1c1c, #121212) !important;
-            border: 1px solid #7f1d1d !important;
-            box-shadow: 0 6px 15px rgba(153, 27, 27, 0.15) !important;
-            border-radius: 8px;
-        }
-        .panel-lateral {
-            background-color: rgba(20, 20, 20, 0.8) !important;
-            border-left: 2px solid #7f1d1d;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
-        }
+        body { background-color: #0a0a0a; background-image: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%); font-family: 'EB Garamond', serif; color: #d4d4d8; }
+        .titulo-gotico { font-family: 'Cinzel', serif; text-shadow: 2px 2px 5px #000000; }
+        .tarjeta-vampiro { background: linear-gradient(145deg, #1c1c1c, #121212) !important; border: 1px solid #7f1d1d !important; box-shadow: 0 6px 15px rgba(153, 27, 27, 0.15) !important; border-radius: 8px; }
+        .panel-lateral { background-color: rgba(20, 20, 20, 0.8) !important; border-left: 2px solid #7f1d1d; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8); }
         .q-tab { color: #71717a; }
         .q-tab--active { color: #dc2626 !important; font-weight: bold; }
         .q-tab-panel { background-color: transparent !important; }
     </style>
 ''')
 
-
 # ==========================================
-# 5. INTERFAZ GRÁFICA PRINCIPAL (NICEGUI)
+# 5. INTERFAZ GRÁFICA PRINCIPAL
 # ==========================================
-
 ui.page_title('Vampiro V20 - Creador de Personajes')
 
-# Cabecera superior
 with ui.row().classes('w-full justify-center items-center py-6 bg-black border-b-2 border-red-900 shadow-2xl'):
     with ui.column().classes('items-center gap-0'):
         ui.label('VAMPIRO').classes('text-5xl text-red-700 titulo-gotico tracking-widest')
         ui.label('LA MASCARADA').classes('text-xl text-gray-500 titulo-gotico tracking-[0.3em]')
 
-# Layout principal: Dos columnas (Ficha Izquierda [2/3] y Panel Derecho [1/3])
 with ui.row().classes('w-full h-screen no-wrap p-6 gap-6'):
-    
-    # --- Columna Izquierda (La Ficha Interactiva) ---
     with ui.column().classes('w-2/3'):
-        # Sistema de pestañas para organizar la creación
         with ui.tabs().classes('w-full border-b border-gray-800') as tabs:
             tab_concepto = ui.tab('1. Concepto').classes('titulo-gotico text-lg')
             tab_atributos = ui.tab('2. Atributos').classes('titulo-gotico text-lg')
@@ -714,111 +908,124 @@ with ui.row().classes('w-full h-screen no-wrap p-6 gap-6'):
 
         with ui.tab_panels(tabs, value=tab_concepto).classes('w-full mt-4'):
             
-            # --- PESTAÑA 1: CONCEPTO ---
             with ui.tab_panel(tab_concepto):
                 with ui.row().classes('w-full gap-8 justify-center tarjeta-vampiro p-8'):
                     with ui.column():
-                        # Usamos bind_value para que lo que se escriba se guarde en tiempo real en Python
                         ui.input('Nombre:').bind_value(datos_concepto, 'Nombre').classes('w-48')
                         ui.input('Jugador:').bind_value(datos_concepto, 'Jugador').classes('w-48')
                         ui.input('Crónica:').bind_value(datos_concepto, 'Crónica').classes('w-48')
-                    
                     with ui.column():
                         arquetipos = ["Ansioso", "Arquitecto", "Autócrata", "Bizarro", "Bribón", "Bufón", "Capitalista", "Celebrante", "Competidor", "Conformista", "Creador", "Cuidador", "Defensor", "Director", "Enigma", "Fanático", "Galán", "Gurú", "Juez", "Mártir", "Monstruo", "Niño", "Pedagogo", "Penitente", "Perfeccionista", "Rebelde", "Sádico", "Sobreviviente", "Solitario", "Tradicionalista", "Visionario"]
-                        
                         ui.select(arquetipos, label='Naturaleza:', on_change=lambda e: actualizar_guia_desplegable(e, "Naturaleza")).bind_value(datos_concepto, 'Naturaleza').classes('w-48')
                         ui.select(arquetipos, label='Conducta:', on_change=lambda e: actualizar_guia_desplegable(e, "Conducta")).bind_value(datos_concepto, 'Conducta').classes('w-48')
                         ui.input('Concepto:').bind_value(datos_concepto, 'Concepto').classes('w-48').on('focus', lambda: referencias_ui["texto_guia"].set_text("CONCEPTO\n\nEl Concepto es un resumen de quién era tu personaje antes del Abrazo (su vida mortal). Es el ancla de su Humanidad.") if referencias_ui.get("texto_guia") else None)
-                    
                     with ui.column():
                         clanes = ['Assamita', 'Brujah', 'Gangrel', 'Giovanni', 'Lasombra', 'Malkavian', 'Nosferatu', 'Ravnos', 'Seguidores de Set', 'Toreador', 'Tremere', 'Tzimisce', 'Ventrue']
                         sel_clan = ui.select(clanes, label='Clan:', on_change=actualizar_guia_clan).classes('w-48')
-                        referencias_ui["clan_select"] = sel_clan # Guardamos la referencia visual
-                        
+                        referencias_ui["clan_select"] = sel_clan
+                        # CÓDIGO ACTUALIZADO: El selector de generación ahora dispara la automatización
                         generaciones = ["13ª Generación", "12ª Generación", "11ª Generación", "10ª Generación", "9ª Generación", "8ª Generación"]
-                        ui.select(generaciones, label='Generación:', on_change=lambda e: actualizar_guia_desplegable(e, "Generación")).bind_value(datos_concepto, 'Generación').classes('w-48')
+                        ui.select(generaciones, label='Generación:', on_change=actualizar_generacion).bind_value(datos_concepto, 'Generación').classes('w-48')
                         ui.input('Sire:').bind_value(datos_concepto, 'Sire').classes('w-48').on('focus', lambda: referencias_ui["texto_guia"].set_text("SIRE\n\nEl Sire es el vampiro que te dio el Abrazo y te convirtió. Es tu maestro y el responsable de tus acciones.") if referencias_ui.get("texto_guia") else None)
-                                                                   
-            # --- PESTAÑA 2: ATRIBUTOS ---
+                         
+                        # NUEVO: Campo dinámico para la debilidad del clan
+                        input_deb = ui.input('Debilidad:').bind_value(datos_concepto, 'Detalle_Debilidad').classes('w-48')
+                        input_deb.set_visibility(False) # Oculto por defecto
+                        referencias_ui["input_debilidad"] = input_deb # Guardamos la referencia para mostrarlo luego    
+                                                              
             with ui.tab_panel(tab_atributos):
                 with ui.row().classes('w-full justify-around'):
                     opciones_base = ['Primario (7 pts)', 'Secundario (5 pts)', 'Terciario (3 pts)']
                     
                     for cat_nombre, attrs in atributos.items():
                         with ui.card().classes('w-64 tarjeta-vampiro p-4'):
-                            ui.label(cat_nombre).classes('text-xl text-red-600 titulo-gotico mb-2 border-b border-red-900 w-full pb-1')
+                            ui.label(cat_nombre).classes('text-xl text-red-600 titulo-gotico mb-1 border-b border-red-900 w-full pb-1')
+                            lbl_contador = ui.label('').classes('text-sm mb-2 text-gray-400')
+                            labels_contadores_attr[cat_nombre] = lbl_contador
                             
-                            sel = ui.select(opciones_base, label='Prioridad', 
-                                            on_change=lambda e, c=cat_nombre: cambiar_prioridad(e, c)) \
+                            sel = ui.select(opciones_base, label='Prioridad', on_change=lambda e, c=cat_nombre: cambiar_prioridad(e, c)) \
                                     .classes('w-full mb-4').props('clearable')
-                            
                             selects_prioridad[cat_nombre] = sel
                             
                             for attr_name in attrs.keys():
                                 with ui.row().classes('items-center justify-between w-full no-wrap mb-1'):
                                     ui.label(attr_name).classes('w-20 text-md text-gray-300 cursor-help') \
                                         .on('mouseenter', lambda e, a=attr_name: actualizar_guia_atributo(a))
-                                    
-                                    # Contenedor gráfico independiente para aislar los puntos
                                     dots_container = ui.row().classes('no-wrap items-center gap-0')
                                     contenedores_atributos[attr_name] = dots_container 
-                                    
-                                    # Pintamos los puntos base por primera vez
                                     renderizar_puntos(dots_container, cat_nombre, attr_name)
 
-            # --- PESTAÑA 3: HABILIDADES ---
             with ui.tab_panel(tab_habilidades):
                 with ui.row().classes('w-full justify-around items-start'):
                     opciones_base_hab = ['Primario (13 pts)', 'Secundario (9 pts)', 'Terciario (5 pts)']
                     
                     for grupo_nombre, lista_habs in habilidades.items():
-                        with ui.card().classes('w-64 tarjeta-vampiro p-4'):
-                            ui.label(grupo_nombre).classes('text-xl text-red-600 titulo-gotico mb-2 border-b border-red-900 w-full pb-1')
+                        with ui.card().classes('w-[30%] tarjeta-vampiro p-4 min-w-[280px]'):
+                            ui.label(grupo_nombre).classes('text-xl text-red-600 titulo-gotico mb-1 border-b border-red-900 w-full pb-1')
+                            lbl_contador_hab = ui.label('').classes('text-sm mb-2 text-gray-400')
+                            labels_contadores_hab[grupo_nombre] = lbl_contador_hab
                             
-                            sel_hab = ui.select(opciones_base_hab, label='Prioridad',
-                                                on_change=lambda e, c=grupo_nombre: cambiar_prioridad_hab(e, c)) \
+                            sel_hab = ui.select(opciones_base_hab, label='Prioridad', on_change=lambda e, c=grupo_nombre: cambiar_prioridad_hab(e, c)) \
                                         .classes('w-full mb-4').props('clearable')
-                            
                             selects_prioridad_hab[grupo_nombre] = sel_hab
 
                             for hab_name in lista_habs:
                                 with ui.row().classes('items-center justify-between w-full no-wrap mb-1'):
-                                    ui.label(hab_name).classes('w-24 text-sm text-gray-300 cursor-help') \
+                                    ui.label(hab_name).classes('w-24 text-sm text-gray-300 cursor-help shrink-0') \
                                         .on('mouseenter', lambda e, h=hab_name: actualizar_guia_habilidad(h))
-                                    
-                                    dots_container = ui.row().classes('no-wrap items-center gap-0')
+                                    dots_container = ui.row().classes('no-wrap items-center gap-0 flex-grow')
                                     contenedores_habilidades[hab_name] = dots_container
                                     renderizar_puntos_hab(dots_container, grupo_nombre, hab_name)
 
-            # --- PESTAÑA 4: VENTAJAS ---
             with ui.tab_panel(tab_ventajas):
                 with ui.row().classes('w-full justify-around items-start'):
-                    
-                    # 1. Disciplinas
                     with ui.card().classes('w-72 tarjeta-vampiro p-4'):
                         ui.label("Disciplinas (3 pts)").classes('text-xl text-red-600 titulo-gotico mb-2 border-b border-red-900 w-full pb-1 cursor-help') \
                             .on('mouseenter', lambda: actualizar_guia_ventaja("Disciplinas"))
+                        
+                        # Creamos un puente gráfico para poder acceder a los selectores desde otras funciones
+                        if "selectores_disciplinas" not in referencias_ui:
+                            referencias_ui["selectores_disciplinas"] = []
+                        else:
+                            referencias_ui["selectores_disciplinas"].clear()
+
                         for i in range(3):
                             with ui.row().classes('items-center justify-between w-full no-wrap mb-2'):
-                                # Usamos str(i) para evitar el error AssertionError del 0
-                                ui.input(placeholder=f'Disciplina {i+1}').bind_value(nombres_ventajas["Disciplinas"], str(i)).classes('w-28 text-sm')
+                                
+                                # NUEVO COMPONENTE: Un selector predictivo que admite texto libre
+                                sel_disc = ui.select(
+                                    options=[], 
+                                    with_input=True, 
+                                    new_value_mode='add-unique', 
+                                    label=f'Disciplina {i+1}'
+                                ).bind_value(nombres_ventajas["Disciplinas"], str(i)).classes('w-32 text-xs')
+                                
+                                referencias_ui["selectores_disciplinas"].append(sel_disc)
+                                
                                 dots_container = ui.row().classes('no-wrap items-center gap-0')
                                 contenedores_ventajas[f"Disciplinas_{i}"] = dots_container
                                 renderizar_puntos_ventajas(dots_container, "Disciplinas", i)
                     
-                    # 2. Trasfondos
+                    # CÓDIGO ACTUALIZADO: Tarjeta de Trasfondos con referencias visuales
                     with ui.card().classes('w-72 tarjeta-vampiro p-4'):
                         ui.label("Trasfondos (5 pts)").classes('text-xl text-red-600 titulo-gotico mb-2 border-b border-red-900 w-full pb-1 cursor-help') \
                             .on('mouseenter', lambda: actualizar_guia_ventaja("Trasfondos"))
+                            
+                        # Creamos un puente gráfico para las cajas de texto de los Trasfondos
+                        if "inputs_trasfondos" not in referencias_ui:
+                            referencias_ui["inputs_trasfondos"] = []
+                        else:
+                            referencias_ui["inputs_trasfondos"].clear()
+                            
                         for i in range(5):
                             with ui.row().classes('items-center justify-between w-full no-wrap mb-1'):
-                                # Usamos str(i) aquí también
-                                ui.input(placeholder=f'Trasfondo {i+1}').bind_value(nombres_ventajas["Trasfondos"], str(i)).classes('w-28 text-sm')
+                                inp_trasfondo = ui.input(placeholder=f'Trasfondo {i+1}').bind_value(nombres_ventajas["Trasfondos"], str(i)).classes('w-28 text-sm')
+                                referencias_ui["inputs_trasfondos"].append(inp_trasfondo)
+                                
                                 dots_container = ui.row().classes('no-wrap items-center gap-0')
                                 contenedores_ventajas[f"Trasfondos_{i}"] = dots_container
                                 renderizar_puntos_ventajas(dots_container, "Trasfondos", i)
                                 
-                    # 3. Virtudes
                     with ui.card().classes('w-72 tarjeta-vampiro p-4'):
                         ui.label("Virtudes (7 pts)").classes('text-xl text-red-600 titulo-gotico mb-2 border-b border-red-900 w-full pb-1')
                         for virtud in ["Conciencia", "Autocontrol", "Coraje"]:
@@ -829,7 +1036,6 @@ with ui.row().classes('w-full h-screen no-wrap p-6 gap-6'):
                                 contenedores_ventajas[f"Virtudes_{virtud}"] = dots_container
                                 renderizar_puntos_ventajas(dots_container, "Virtudes", virtud)
 
-                # 4. Rasgos Derivados (Fila inferior, máximo 10 puntos)
                 with ui.row().classes('w-full justify-around mt-8'):
                     with ui.card().classes('w-[45%] tarjeta-vampiro p-4 items-center'):
                         ui.label("Humanidad").classes('text-2xl text-red-600 titulo-gotico mb-2 cursor-help') \
@@ -843,22 +1049,16 @@ with ui.row().classes('w-full h-screen no-wrap p-6 gap-6'):
                         cont_fdv = ui.row().classes('no-wrap items-center gap-0')
                         contenedores_derivados["Fuerza de Voluntad"] = cont_fdv
                         
-                # Dibujamos los puntos base calculados al cargar la pestaña
                 actualizar_derivados()
                 
-                # Botón de validación para pasar de fase
                 with ui.row().classes('w-full justify-center mt-12'):
-                    ui.button('VALIDAR FICHA Y CONTINUAR', 
-                              on_click=lambda: validar_ficha_base(tabs, tab_gratuitos)) \
+                    ui.button('VALIDAR FICHA Y CONTINUAR', on_click=lambda: validar_ficha_base(tabs, tab_gratuitos)) \
                         .classes('bg-red-900 text-white font-bold py-3 px-8 rounded-sm hover:bg-red-700 transition-colors titulo-gotico text-xl shadow-lg')
                         
-            # --- PESTAÑA 5: PUNTOS GRATUITOS ---
             with ui.tab_panel(tab_gratuitos):
                 with ui.column().classes('w-full items-center tarjeta-vampiro p-10'):
                     ui.label("LA SANGRE SE AFIANZA").classes('text-3xl text-red-600 titulo-gotico mb-4')
                     ui.label("Tu ficha base ha sido bloqueada y auditada con éxito. Ahora dispones de 15 Puntos Gratuitos para personalizar a tu personaje saltándote las restricciones iniciales. Vuelve a las pestañas anteriores para gastarlos haciendo clic en los puntos.").classes('text-lg text-gray-300 text-center mb-8')
-                    
-                    # Conectamos la etiqueta de texto con nuestra referencia global para que se actualice sola
                     label_puntos = ui.label(f'Puntos Gratuitos Restantes: {puntos_gratuitos.get("restantes", 15)}').classes('text-5xl text-yellow-600 titulo-gotico mb-8')
                     label_puntos_gratuitos["ui"] = label_puntos
                     
@@ -869,26 +1069,32 @@ with ui.row().classes('w-full h-screen no-wrap p-6 gap-6'):
                             ui.label("• Disciplinas: 7 puntos por punto").classes('text-gray-300 text-lg')
                             ui.label("• Habilidades: 2 puntos por punto").classes('text-gray-300 text-lg')
                             ui.label("• Virtudes: 2 puntos por punto").classes('text-gray-300 text-lg')
+                            ui.label("• Humanidad: 2 puntos por punto").classes('text-gray-300 text-lg')
                             ui.label("• Trasfondos: 1 punto por punto").classes('text-gray-300 text-lg')
                             
-                        # Botón para descargar el archivo (Añadir al final de tab_gratuitos)
                     with ui.row().classes('w-full justify-center mt-12'):
                         ui.button('GUARDAR PERSONAJE (JSON)', on_click=descargar_ficha) \
                             .classes('bg-green-900 text-white font-bold py-3 px-8 rounded-sm hover:bg-green-700 transition-colors titulo-gotico text-xl shadow-lg')
                             
-                    # --- ZONA INFERIOR GLOBAL: CARGA DE FICHA ---
         with ui.row().classes('w-full justify-between items-center mt-6 border-t border-red-900 pt-4'):
             ui.label('Gestión de Archivos').classes('text-gray-400 titulo-gotico text-xl')
-            ui.upload(label='Cargar Ficha (.json)', auto_upload=True, on_upload=cargar_ficha).props('accept=".json"').classes('w-64 tarjeta-vampiro rounded-lg shadow-md')
+            with ui.row().classes('items-center gap-4'):
+                ui.button('📜 VER RESUMEN', on_click=mostrar_resumen) \
+                    .classes('bg-gray-800 text-red-500 font-bold py-2 px-4 rounded-sm hover:bg-gray-700 transition-colors titulo-gotico')
+                ui.upload(label='Cargar Ficha (.json)', auto_upload=True, on_upload=cargar_ficha).props('accept=".json"').classes('w-64 tarjeta-vampiro rounded-lg shadow-md')
 
-    # Panel Derecho: Guía del Narrador
+    with ui.dialog() as resumen_dialog, ui.card().classes('tarjeta-vampiro p-6 w-[650px] max-w-full max-h-[85vh] overflow-y-auto'):
+        ui.label('RESUMEN DE LA FICHA').classes('text-2xl text-red-600 titulo-gotico mb-4 border-b border-red-900 pb-2 w-full')
+        resumen_markdown = ui.markdown('').classes('text-gray-200 w-full')
+        with ui.row().classes('w-full justify-end mt-4'):
+            ui.button('Cerrar', on_click=resumen_dialog.close) \
+                .classes('bg-red-900 text-white font-bold py-2 px-6 rounded-sm hover:bg-red-700 transition-colors titulo-gotico')
+    referencias_ui["resumen_dialog"] = resumen_dialog
+    referencias_ui["resumen_markdown"] = resumen_markdown
+
     with ui.column().classes('w-1/3 panel-lateral p-6 rounded-lg h-full'):
         ui.label('LA BIBLIOTECA OSCURA').classes('text-2xl text-red-700 titulo-gotico mb-4 border-b border-red-900 pb-2 w-full text-center')
-        
         texto_guia = ui.label('Bienvenido, Vástago.\n\nSelecciona opciones en tu hoja de personaje para desvelar los secretos de tu linaje y tu naturaleza.').classes('text-lg text-gray-300 whitespace-pre-line leading-relaxed')
-        
-        # Conectamos el texto a las funciones lógicas
         referencias_ui["texto_guia"] = texto_guia
     
-# Comando de ejecución de la aplicación web
 ui.run()
