@@ -12,6 +12,7 @@
 #*===============================================================================================================================
 
 #* IMPORTS
+# randint (random)
 from random import randint
 
 #* CLASS "basicV20"
@@ -62,3 +63,37 @@ class basicV20:
         sheet
         """
         ...
+    
+    # Dice rolls
+    def roll(self,pool:int,difficulty:int=6,specialty:bool=False)->tuple[tuple[int],int]:
+        """
+        Rolls a given number of ten faced dice.
+        
+        Arguments
+        ---------
+        pool : `int`
+            Dice pool for the roll.
+        difficulty : `int`, Optional
+            Difficulty for the roll. Defaults to 6.
+        specialty : `bool`, Optional
+            Whether if the roll represents an action included in some specialty, so 10's count as two successes each, or not.
+            Defaults to `False`.
+        
+        Returns
+        -------
+        tuple[int]
+            The resultant numbers from the dice.
+        int
+            Number of successes of the roll for the given difficulty.
+        """
+        roll=tuple(randint(1,10) for i in range(pool))
+        #// successes=0
+        #// for die in roll:
+        #//     if die==10 and specialty:
+        #//         successes+=2
+        #//     elif die>=difficulty:
+        #//         successes+=1
+        successes=len(tuple(die for die in roll if die>=difficulty))
+        if specialty:
+            successes+=len(tuple(die for die in roll if die==10))
+        return roll,successes
