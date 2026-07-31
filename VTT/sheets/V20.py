@@ -65,6 +65,7 @@ class basicV20:
         ...
     
     # Dice rolls
+    #? Make it to control the dice pool logic instead of receiving an integer from the GUI
     def roll(self,pool:int,difficulty:int=6,specialty:bool=False)->tuple[tuple[int],int]:
         """
         Rolls a given number of ten faced dice.
