@@ -64,6 +64,23 @@ class basicV20:
         """
         ...
     
+    # Dice rolls #^ with dice pool logic
+    def roll(self,aspect:str,difficulty:int=6,specialty:bool=False)->tuple[tuple[int],int]:
+        """
+        Rolls a given aspect from the character sheet.
+        
+        Arguments
+        ---------
+        aspect : `str`
+            Character's Aspect to be rolled.
+        difficulty : `int`, Optional
+            Difficulty for the roll. Defaults to `6`, the standard difficulty.
+        specialty : `bool`, Optional
+            Whether if the roll involves a character's specialty (`True`), so 10's count as two successes each, or not (`False`).
+            Defaults to `False`.
+        """
+        ...
+    
     # Dice rolls
     #? Make it to control the dice pool logic instead of receiving an integer from the GUI
     def roll(self,pool:int,difficulty:int=6,specialty:bool=False)->tuple[tuple[int],int]:
